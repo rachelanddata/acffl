@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Show Me the Money — ACFFL Town Hall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFBF0;
+    --bg-alt: #FFF4D6;
+    --ink: #22303C;
+    --ink-soft: #5C6B76;
+    --ink-faint: #98A2AA;
+    --green: #2BB673;
+    --gold: #FFB703;
+    --coral: #FF6B6B;
+    --sky: #4CC9F0;
+    --purple: #9B5DE5;
+    --pink: #F15BB5;
+    --line: #EEE3C8;
+    --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; }
+    * { animation: none !important; }
+  }
+  h1, h2, h3, .display {
+    font-family: 'Fredoka', 'Inter', sans-serif;
+    font-weight: 600;
+    line-height: 1.05;
+    margin: 0;
+  }
+  #deck { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+  .slide {
+    height: 100vh; width: 100%;
+    scroll-snap-align: start;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 6vh 8vw 12vh;
+    position: relative; overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  .slide:nth-of-type(even) { background: var(--bg-alt); }
+
+  .eyebrow { font-size: 14px; font-weight: 600; color: var(--green); margin-bottom: 0.5rem; }
+  .headline { font-size: clamp(30px, 5vw, 56px); max-width: 18ch; }
+  .subtext { font-size: 17px; color: var(--ink-soft); max-width: 50ch; margin-top: 1rem; line-height: 1.6; }
+  .takeaway { font-size: 15px; color: var(--ink-soft); max-width: 62ch; margin-top: 1.5rem; padding-top: 1.1rem; border-top: 1px solid var(--line); }
+  .takeaway b { color: var(--ink); font-weight: 600; }
+
+  .chart-wrap { width: 100%; max-width: 880px; margin-top: 1.5rem; }
+
+  /* ---- Title slide ---- */
+  .title-slide { justify-content: center; align-items: center; text-align: center; }
+  .emoji-row { font-size: 56px; margin-bottom: 0.8rem; }
+  .emoji-row span { display: inline-block; animation: bob 1.6s ease-in-out infinite; }
+  .emoji-row span:nth-child(2) { animation-delay: 0.2s; }
+  .emoji-row span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-14px) rotate(4deg); } }
+  .wordmark { font-size: clamp(40px, 8vw, 84px); }
+  .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .confetti i {
+    position: absolute; top: -20px; width: 10px; height: 14px; opacity: 0.85;
+    animation: fall linear infinite;
+    border-radius: 2px;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
+  /* ---- Stat cards ---- */
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 900px; margin-top: 2rem; width: 100%; }
+  .stat-card { background: var(--card); border-radius: 20px; padding: 1.5rem; border: 1px solid var(--line); }
+  .stat-label { font-size: 13px; color: var(--ink-soft); font-weight: 500; }
+  .stat-num { font-family: 'Fredoka', sans-serif; font-size: clamp(28px, 4vw, 42px); margin-top: 4px; }
+  .stat-num.green { color: var(--green); }
+  .stat-num.coral { color: var(--coral); }
+  .stat-num.gold { color: #B87700; }
+  .stat-note { font-size: 12px; color: var(--ink-soft); margin-top: 8px; font-weight: 500; }
+
+  .roster-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 640px; margin-top: 1.4rem; width: 100%; }
+  .roster-card { background: var(--card); border-radius: 16px; padding: 1rem 1.1rem; border: 1px solid var(--line); }
+  .roster-season { font-size: 12px; font-weight: 600; color: var(--green); margin-bottom: 6px; }
+  .roster-count { font-family: 'Fredoka', sans-serif; font-size: 20px; color: var(--ink); }
+  .roster-count span { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 400; color: var(--ink-soft); margin-left: 4px; }
+  .roster-count.sub { font-size: 15px; color: var(--ink-soft); margin-top: 2px; }
+
+  .variance-list { width: 100%; max-width: 720px; margin-top: 1.4rem; display: flex; flex-direction: column; gap: 10px; }
+  .variance-row { display: grid; grid-template-columns: 190px 1fr 76px; align-items: center; gap: 12px; font-size: 13px; }
+  .variance-label { color: var(--ink); font-weight: 500; }
+  .variance-track { position: relative; height: 18px; background: var(--bg); border-radius: 4px; }
+  .variance-track::before { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--line); }
+  .variance-bar { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+  .variance-bar.pos { left: 50%; background: var(--green); }
+  .variance-bar.neg { right: 50%; background: var(--coral); }
+  .variance-value { text-align: right; font-weight: 600; }
+  .variance-value.pos { color: var(--green); }
+  .variance-value.neg { color: var(--coral); }
+
+  .budget-table {
+    display: grid; grid-template-columns: minmax(170px,1.7fr) repeat(3, minmax(78px,1fr));
+    width: 100%; max-width: 720px; margin-top: 1.3rem;
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+    font-size: 13px;
+  }
+  .budget-table > div { padding: 8px 12px; display: flex; align-items: center; border-bottom: 1px solid var(--line); }
+  .budget-table > div.num { justify-content: flex-end; font-variant-numeric: tabular-nums; }
+  .bt-head { font-weight: 600; color: var(--ink-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; background: var(--bg-alt); }
+  .bt-cell { color: var(--ink); }
+  .bt-cell.pos { color: var(--green); font-weight: 600; }
+  .bt-cell.neg { color: var(--coral); font-weight: 600; }
+  .bt-total { font-weight: 700; background: var(--bg-alt); border-bottom: none; font-family: 'Fredoka', sans-serif; }
+  .bt-total.pos { color: var(--green); }
+  .bt-total.neg { color: var(--coral); }
+
+  /* ---- Legend ---- */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--ink-soft); margin-bottom: 10px; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  /* ---- Refs slide ---- */
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--green); color: white; font-family: 'Fredoka', sans-serif;
+    font-size: 15px; padding: 8px 18px; border-radius: 999px; margin-top: 1.4rem;
+  }
+  .whistle { display: inline-block; animation: shake 2s ease-in-out infinite; }
+  @keyframes shake { 0%,90%,100% { transform: rotate(0); } 92% { transform: rotate(-14deg); } 94% { transform: rotate(12deg); } 96% { transform: rotate(-8deg); } 98% { transform: rotate(6deg); } }
+
+  /* ---- Poll slide ---- */
+  .poll-layout { display: flex; gap: 48px; align-items: center; flex-wrap: wrap; margin-top: 1.5rem; }
+  .qr-frame {
+    padding: 14px; background: white; border-radius: 20px;
+    border: 3px solid var(--green); box-shadow: 0 0 0 6px rgba(43,182,115,0.12);
+    animation: pulse 2.2s ease-in-out infinite; flex-shrink: 0;
+  }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 6px rgba(43,182,115,0.12); } 50% { box-shadow: 0 0 0 12px rgba(43,182,115,0.05); } }
+  .qr-frame img { width: 200px; height: 200px; display: block; border-radius: 8px; }
+  .poll-options { display: flex; flex-direction: column; gap: 10px; }
+  .chip {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 18px; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 10px;
+  }
+  .chip .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .scan-cta { font-family: 'Fredoka', sans-serif; font-size: 14px; color: var(--green); margin-top: 10px; text-align: center; }
+
+  /* ---- Nav ---- */
+  #nav {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 64px;
+    background: rgba(255,251,240,0.92); backdrop-filter: blur(6px);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; gap: 18px; z-index: 10;
+  }
+  #nav button {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  #nav button:hover { border-color: var(--green); color: var(--green); }
+  #nav button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  #ticks { display: flex; align-items: center; gap: 7px; }
+  #ticks button { width: 18px; height: 4px; border-radius: 2px; border: none; background: var(--line); padding: 0; cursor: pointer; }
+  #ticks button.active { background: var(--green); width: 26px; }
+  #counter { font-size: 12px; color: var(--ink-faint); min-width: 44px; text-align: center; }
+
+  @media (max-width: 720px) {
+    .slide { padding: 6vh 7vw 14vh; }
+    .stat-row { grid-template-columns: 1fr; }
+    .poll-layout { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+  <!-- 1: Title -->
+  <section class="slide title-slide">
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+    <div class="emoji-row" aria-hidden="true"><span>💵</span><span>🏈</span><span>💰</span></div>
+    <div class="wordmark">Show Me the F*cking Money</div>
+    <p class="subtext">ACFFL Community Meeting - Treasurer</p>
+  </section>
+
+  <!-- 2: TL;DR -->
+  <section class="slide">
+    <div class="eyebrow">The 60-second version</div>
+    <h2 class="headline">Here's the whole story in 3 numbers</h2>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Money in (up to July'26)</div>
+        <div class="stat-num green" data-count="4188.38">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Money out (up to July'26)</div>
+        <div class="stat-num coral" data-count="3642.06">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Left over</div>
+        <div class="stat-num gold" data-count="546.32">$0</div>
+        <div class="stat-note">🎯 Goal: $1,000 reserve ALWAYS</div>
+      </div>
+    </div>
+    <p class="takeaway">That's January through July 2026. Every dollar is tracked including liabilities/outstanding reiumbursables</p>
+  </section>
+
+  <!-- 3: Where it comes from -->
+  <section class="slide">
+    <div class="eyebrow">Follow the money — inflows</div>
+    <h2 class="headline">Almost ALL of it is you (via Registration) 🙌</h2>
+    <div class="chart-wrap">
+      <div id="donutIn" style="width:90%;max-width:420px"></div>
+    </div>
+    <div class="roster-row">
+      <div class="roster-card">
+        <div class="roster-season">Fall 2025</div>
+        <div class="roster-count">66 <span>playing</span></div>
+        <div class="roster-count sub">8 <span>non-playing</span></div>
+      </div>
+      <div class="roster-card">
+        <div class="roster-season">Spring 2026</div>
+        <div class="roster-count">54 <span>playing</span></div>
+        <div class="roster-count sub">15 <span>non-playing</span></div>
+      </div>
+      <div class="roster-card">
+        <div class="roster-season">Fall 2026</div>
+        <div class="roster-count">34 <span>playing</span></div>
+        <div class="roster-count sub">11 <span>non-playing</span></div>
+      </div>
+    </div>
+    <p class="takeaway">Registration fees fund <b>97%</b> of the league.</p>
+    <div class="stat-note">🎯 Goal: Increase Sponsorships</div>
+  </section>
+
+  <!-- 4: Where it goes -->
+  <section class="slide">
+    <div class="eyebrow">Follow the money — outflows</div>
+    <h2 class="headline">Where every dollar actually goes</h2>
+    <div class="chart-wrap">
+      <div id="donutOut" style="width:100%"></div>
+    </div>
+    <p class="takeaway">Field rental alone is <b>48%</b> of all spending — by far the biggest fixed cost the league carries every season.</p>
+  </section>
+
+  <!-- 5: Budget vs actual -->
+   <section class="slide">
+    <div class="eyebrow">Are we on track?</div>
+    <h2 class="headline">Budget vs. actual, year to date</h2>
+    <div class="badge" style="background:var(--coral)">📊 $2,552 actual vs. a $3,278 goal — $726 behind pace</div>
+    <div class="budget-table">
+      <div class="bt-head">Category</div><div class="bt-head num">Budget</div><div class="bt-head num">Actual</div><div class="bt-head num">Variance</div>
+
+      <div class="bt-cell">Registration / League Fees</div><div class="bt-cell num">$7,700</div><div class="bt-cell num">$6,353</div><div class="bt-cell num neg">-$1,347</div>
+      <div class="bt-cell">Previous Season Surplus</div><div class="bt-cell num">$1,358</div><div class="bt-cell num">$1,358</div><div class="bt-cell num">$0</div>
+      <div class="bt-cell">Other Income / Donation</div><div class="bt-cell num">$500</div><div class="bt-cell num">$115</div><div class="bt-cell num neg">-$385</div>
+      <div class="bt-cell">Field Rental</div><div class="bt-cell num">-$3,000</div><div class="bt-cell num">-$2,536</div><div class="bt-cell num pos">+$464</div>
+      <div class="bt-cell">Uniforms / League Shirts</div><div class="bt-cell num">-$1,400</div><div class="bt-cell num">-$694</div><div class="bt-cell num pos">+$706</div>
+      <div class="bt-cell">Event Supplies</div><div class="bt-cell num">-$500</div><div class="bt-cell num">-$855</div><div class="bt-cell num neg">-$355</div>
+      <div class="bt-cell">Equipment</div><div class="bt-cell num">-$500</div><div class="bt-cell num">-$239</div><div class="bt-cell num pos">+$261</div>
+      <div class="bt-cell">League Fees / Affiliation</div><div class="bt-cell num">-$700</div><div class="bt-cell num">-$640</div><div class="bt-cell num pos">+$60</div>
+      <div class="bt-cell">Software / Website</div><div class="bt-cell num">-$180</div><div class="bt-cell num">-$310</div><div class="bt-cell num neg">-$130</div>
+
+      <div class="bt-total">Total Surplus/Deficit</div><div class="bt-total num">$3,278</div><div class="bt-total num">$2,552</div><div class="bt-total num neg">-$726</div>
+    </div>
+    <p class="takeaway">We're aiming for a <b>$3,278</b> surplus this year but are trending at <b>$2,552</b> — that number already includes the <b>$1,358</b> carried over from last season, so this year's activity alone is running closer to break-even. Registration pacing is the biggest gap; the good news is uniforms, field rental, and equipment are all running <b>under</b> budget.</p>
+  </section>
+
+  <!-- 6: Refs question -->
+  <section class="slide">
+    <div class="eyebrow">The #1 question we hear</div>
+    <h2 class="headline"><span class="whistle">🏈</span> "Why can't we pay refs?"</h2>
+    <p class="subtext">Not enough surplus to account for a healthy reserve. Two things get us there: getting leaner on expenses & maintaining/increasing registration (or Sponsorships).</p>
+    <div class="badge">🎉 Spring 2027 proposal: $1,215 budgeted for refs</div>
+    <p class="takeaway">It's the largest new line item in next season's proposed budget, built to operate at a larger surplus, not a thin one.</p>
+  </section>
+
+  <!-- 7: Spring 2027 sankey -->
+  <section class="slide">
+    <div class="eyebrow">The plan for next season</div>
+    <h2 class="headline">Here's the proposed Spring 2027 budget 📋</h2>
+    <div class="chart-wrap">
+      <div id="sankeyWrap" style="width:100%;overflow-x:auto"></div>
+    </div>
+    <p class="takeaway">Modeled on <b>$3,800</b> in registration revenue plus a <b>$2,522</b> surplus carried over from last season, this plan funds <b>$1,215</b> for refs and still lands at a <b>$2,657</b> surplus. <i>Note: the carryover depends on how registrations finish out this season.</i></p>
+  </section>
+
+  <!-- 8: Poll -->
+  <section class="slide">
+    <div class="eyebrow">Your turn</div>
+    <h2 class="headline">Where should the (fucking) money go?</h2>
+    <div class="poll-layout">
+      <div>
+        <div class="qr-frame">
+          <img src="data:image/png;base64,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" alt="QR code linking to the Slido poll">
+        </div>
+        <div class="scan-cta">📱 Scan to vote</div>
+      </div>
+      <div class="poll-options">
+        <div class="chip"><span class="dot" style="background:var(--coral)"></span>Referee pay</div>
+        <div class="chip"><span class="dot" style="background:var(--sky)"></span>Team events / socials</div>
+        <div class="chip"><span class="dot" style="background:var(--purple)"></span>Equipment upgrades</div>
+        <div class="chip"><span class="dot" style="background:var(--green)"></span>Something else — tell us!</div>
+      </div>
+    </div>
+    <p class="takeaway">We want YOUR input to help determine the budget for YOUR league.</p>
+  </section>
+
+</div>
+
+<nav id="nav" aria-label="Slide navigation">
+  <button id="prevBtn" aria-label="Previous slide">‹</button>
+  <div id="ticks"></div>
+  <button id="nextBtn" aria-label="Next slide">›</button>
+  <span id="counter">1 / 6</span>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<script>
+/* ---------- Nav ---------- */
+const deck = document.getElementById('deck');
+const slides = Array.from(document.querySelectorAll('.slide'));
+const ticksWrap = document.getElementById('ticks');
+const counter = document.getElementById('counter');
+let current = 0;
+
+slides.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+  b.addEventListener('click', () => goTo(i));
+  ticksWrap.appendChild(b);
+});
+const tickEls = Array.from(ticksWrap.children);
+
+function setActive(i) {
+  current = i;
+  tickEls.forEach((t, idx) => t.classList.toggle('active', idx === i));
+  counter.textContent = (i+1) + ' / ' + slides.length;
+}
+function goTo(i) {
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  slides[i].scrollIntoView({ behavior: 'smooth' });
+}
+document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+document.addEventListener('keydown', (e) => {
+  if (['ArrowDown','ArrowRight','PageDown',' '].includes(e.key)) { e.preventDefault(); goTo(current + 1); }
+  if (['ArrowUp','ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); goTo(current - 1); }
+});
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(en => {
+    if (en.isIntersecting && en.intersectionRatio > 0.6) {
+      setActive(slides.indexOf(en.target));
+      if (en.target.querySelector('.stat-num') && !en.target.dataset.counted) {
+        en.target.dataset.counted = '1';
+        countUp(en.target);
+      }
+    }
+  });
+}, { root: deck, threshold: [0.6] });
+slides.forEach(s => io.observe(s));
+setActive(0);
+
+/* ---------- Count-up numbers ---------- */
+function countUp(slideEl) {
+  const nums = slideEl.querySelectorAll('.stat-num');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  nums.forEach(el => {
+    const target = parseFloat(el.dataset.count);
+    if (reduced) { el.textContent = '$' + target.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); return; }
+    const dur = 900, start = performance.now();
+    function frame(t) {
+      const p = Math.min(1, (t - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const val = target * eased;
+      el.textContent = '$' + val.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+      if (p < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+/* ---------- Confetti ---------- */
+(() => {
+  const wrap = document.getElementById('confetti');
+  const colors = ['#2BB673','#FFB703','#FF6B6B','#4CC9F0','#9B5DE5','#F15BB5'];
+  for (let i = 0; i < 26; i++) {
+    const el = document.createElement('i');
+    el.style.left = Math.random() * 100 + '%';
+    el.style.background = colors[i % colors.length];
+    el.style.animationDuration = (5 + Math.random() * 4) + 's';
+    el.style.animationDelay = (Math.random() * 5) + 's';
+    el.style.transform = 'rotate(' + Math.floor(Math.random()*360) + 'deg)';
+    wrap.appendChild(el);
+  }
+})();
+
+/* ---------- Donut: where it comes from ---------- */
+(() => {
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('viewBox', '0 0 400 360');
+  svg.setAttribute('role', 'img');
+  svg.innerHTML = `
+    <title>Revenue split: registration fees vs other income</title>
+    <path d="M200.0,70.0 A110,110 0 1 1 180.7,71.7 L188.8,117.0 A64,64 0 1 0 200.0,116.0 Z" fill="#2BB673"/>
+    <path d="M180.7,71.7 A110,110 0 0 1 200.0,70.0 L200.0,116.0 A64,64 0 0 0 188.8,117.0 Z" fill="#FFB703"/>
+    <text x="200" y="185" text-anchor="middle" dominant-baseline="central" style="font:600 20px Fredoka,sans-serif;fill:#22303C">97%</text>
+    <text x="200" y="205" text-anchor="middle" dominant-baseline="central" style="font:400 12px Inter,sans-serif;fill:#5C6B76">from members</text>
+
+    <line x1="210.4" y1="297.5" x2="240" y2="280" stroke="#EEE3C8" stroke-dasharray="2 3"/>
+    <circle cx="246" cy="280" r="4" fill="#2BB673"/>
+    <text x="254" y="280" dominant-baseline="central" style="font:400 13px Inter,sans-serif;fill:#5C6B76">Registration fees — 97.2%</text>
+
+    <line x1="189.6" y1="62.5" x2="150" y2="45" stroke="#EEE3C8" stroke-dasharray="2 3"/>
+    <circle cx="144" cy="45" r="4" fill="#FFB703"/>
+    <text x="136" y="45" text-anchor="end" dominant-baseline="central" style="font:400 13px Inter,sans-serif;fill:#5C6B76">Other income — 2.8%</text>
+  `;
+  document.getElementById('donutIn').appendChild(svg);
+})();
+
+/* ---------- Donut: where it goes ---------- */
+(() => {
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('viewBox', '0 0 680 400');
+  svg.setAttribute('role', 'img');
+  svg.innerHTML = `
+    <title>Actual 2026 YTD expense breakdown</title>
+    <path d="M340.0,135.0 A95,95 0 0 1 351.3,324.3 L346.9,287.6 A58,58 0 0 0 340.0,172.0 Z" fill="#FF6B6B"/>
+    <path d="M351.3,324.3 A95,95 0 0 1 256.3,275.0 L288.9,257.5 A58,58 0 0 0 346.9,287.6 Z" fill="#FFB703"/>
+    <path d="M256.3,275.0 A95,95 0 0 1 266.6,169.7 L295.2,193.2 A58,58 0 0 0 288.9,257.5 Z" fill="#4CC9F0"/>
+    <path d="M266.6,169.7 A95,95 0 0 1 296.9,145.3 L313.7,178.3 A58,58 0 0 0 295.2,193.2 Z" fill="#9B5DE5"/>
+    <path d="M296.9,145.3 A95,95 0 0 1 328.1,135.7 L332.7,172.5 A58,58 0 0 0 313.7,178.3 Z" fill="#2BB673"/>
+    <path d="M328.1,135.7 A95,95 0 0 1 340.0,135.0 L340.0,172.0 A58,58 0 0 0 332.7,172.5 Z" fill="#F15BB5"/>
+
+    <text x="340" y="222" text-anchor="middle" dominant-baseline="central" style="font:600 16px Fredoka,sans-serif;fill:#22303C">$3,642</text>
+    <text x="340" y="240" text-anchor="middle" dominant-baseline="central" style="font:400 12px Inter,sans-serif;fill:#5C6B76">total spent</text>
+
+    <line x1="442.8" y1="223.9" x2="480" y2="230" stroke="#EEE3C8" stroke-dasharray="2 3"/>
+    <circle cx="486" cy="230" r="4" fill="#FF6B6B"/>
+    <text x="494" y="230" dominant-baseline="central" style="font:400 13px Inter,sans-serif;fill:#5C6B76">Field rental — 48.1%</text>
+
+    <line x1="255.7" y1="321.4" x2="210" y2="330" stroke="#EEE3C8" stroke-dasharray="2 3"/>
+    <circle cx="204" cy="330" r="4" fill="#FFB703"/>
+    <text x="196" y="330" text-anchor="end" dominant-baseline="central" style="font:400 13px Inter,sans-serif;fill:#5C6B76">Uniforms / shirts — 19.1%</text>
+
+    <line x1="237.5" y1="220.0" x2="210" y2="270" stroke="#EEE3C8" stroke-dasharray="2 3"/>
+    <circle cx="204" cy="270" r="4" fill="#4CC9F0"/>
+    <text x="196" y="270" text-anchor="end" dominant-baseline="central" style="font:400 13px Inter,sans-serif;fill:#5C6B76">Event supplies — 18.8%</text>
+
+    <line x1="275.5" y1="149.7" x2="210" y2="210" stroke="#EEE3C8" stroke-dasharray="2 3"/>
+    <circle cx="204" cy="210" r="4" fill="#9B5DE5"/>
+    <text x="196" y="210" text-anchor="end" dominant-baseline="central" style="font:400 13px Inter,sans-serif;fill:#5C6B76">Equipment — 6.6%</text>
+
+    <line x1="309.7" y1="131.5" x2="210" y2="150" stroke="#EEE3C8" stroke-dasharray="2 3"/>
+    <circle cx="204" cy="150" r="4" fill="#2BB673"/>
+    <text x="196" y="150" text-anchor="end" dominant-baseline="central" style="font:400 13px Inter,sans-serif;fill:#5C6B76">League fees — 5.5%</text>
+
+    <line x1="333.5" y1="127.2" x2="210" y2="90" stroke="#EEE3C8" stroke-dasharray="2 3"/>
+    <circle cx="204" cy="90" r="4" fill="#F15BB5"/>
+    <text x="196" y="90" text-anchor="end" dominant-baseline="central" style="font:400 13px Inter,sans-serif;fill:#5C6B76">Software / other — 2.0%</text>
+  `;
+  document.getElementById('donutOut').appendChild(svg);
+})();/* ---------- Sankey: Spring 2027 proposed budget ---------- */
+(() => {
+  const nodesData = [
+    { name: 'Registration revenue', cat: 'rev' },
+    { name: 'Last season surplus', cat: 'carry' },
+    { name: 'Total available', cat: 'hub' },
+    { name: 'Fields', cat: 'exp' },
+    { name: 'Shirts', cat: 'exp' },
+    { name: 'Refs', cat: 'highlight' },
+    { name: 'Equipment', cat: 'exp' },
+    { name: 'NGFFL fees', cat: 'exp' },
+    { name: 'Admin / overhead', cat: 'exp' },
+    { name: 'Surplus', cat: 'net' }
+  ];
+  const links = [
+    { source: 0, target: 2, value: 3800 },
+    { source: 1, target: 2, value: 2522 },
+    { source: 2, target: 3, value: 1000 },
+    { source: 2, target: 4, value: 700 },
+    { source: 2, target: 5, value: 1215 },
+    { source: 2, target: 6, value: 200 },
+    { source: 2, target: 7, value: 200 },
+    { source: 2, target: 8, value: 350 },
+    { source: 2, target: 9, value: 2657 }
+  ];
+  const nodeColor = { rev: '#2BB673', carry: '#9B5DE5', hub: '#8A8677', exp: '#4CC9F0', highlight: '#FF6B6B', net: '#FFB703' };
+  const linkColor = { rev: '#B7E4CC', carry: '#DDCBF5', hub: '#D9D4C0', exp: '#BFE8F8', highlight: '#FFC9C9', net: '#FFE2A1' };
+
+  const width = 680, height = 400;
+  const svg = d3.select('#sankeyWrap').append('svg')
+    .attr('width', '100%').attr('viewBox', `0 0 ${width} ${height}`).attr('role', 'img');
+  svg.append('title').text('Proposed Spring 2027 budget flow from revenue and carried-over surplus to each expense category and new surplus');
+
+  const sankey = d3.sankey().nodeWidth(14).nodePadding(14).extent([[1, 16], [width - 190, height - 16]]);
+  const graph = sankey({ nodes: nodesData.map(d => Object.assign({}, d)), links: links.map(d => Object.assign({}, d)) });
+  const fmt = v => '$' + v.toLocaleString();
+
+  svg.append('g').selectAll('path').data(graph.links).join('path')
+    .attr('d', d3.sankeyLinkHorizontal()).attr('fill', 'none')
+    .attr('stroke', d => linkColor[d.source.cat === 'hub' ? d.target.cat : d.source.cat]).attr('stroke-opacity', 0.85)
+    .attr('stroke-width', d => Math.max(1, d.width));
+
+  const node = svg.append('g').selectAll('g').data(graph.nodes).join('g');
+  node.append('rect')
+    .attr('x', d => d.x0).attr('y', d => d.y0)
+    .attr('width', d => d.x1 - d.x0).attr('height', d => d.y1 - d.y0)
+    .attr('rx', 4).attr('fill', d => nodeColor[d.cat]);
+  node.append('text')
+    .attr('x', d => d.x1 + 8).attr('y', d => (d.y0 + d.y1) / 2 - 6)
+    .attr('dominant-baseline', 'central')
+    .style('font-size', '12px').style('font-weight', '600').style('fill', '#22303C')
+    .style('font-family', 'Inter, sans-serif')
+    .text(d => d.name);
+  node.append('text')
+    .attr('x', d => d.x1 + 8).attr('y', d => (d.y0 + d.y1) / 2 + 10)
+    .attr('dominant-baseline', 'central')
+    .style('font-size', '12px').style('fill', '#5C6B76')
+    .style('font-family', 'Inter, sans-serif')
+    .text(d => fmt(d.value));
+})();
+</script>
+</body>
+</html>
